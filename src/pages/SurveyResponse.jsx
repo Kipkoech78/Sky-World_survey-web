@@ -124,6 +124,29 @@ export default function SurveyResponses({ survey, navigate }) {
                       <p className="text-sm text-slate-700">{r.description}</p>
                     </div>
                   )}
+                  {r.answers && Object.entries(r.answers).length > 0 && (
+  Object.entries(r.answers).map(([key, value]) => (
+    value ? (
+      <div key={key}>
+        <p className="text-xs text-slate-400 mb-0.5">
+          {/* Convert snake_case / PascalCase to readable label */}
+          {key.replace(/_/g, " ").replace(/([A-Z])/g, " $1").trim()}
+        </p>
+        {value.includes(",") ? (
+          <div className="flex flex-wrap gap-1">
+            {value.split(",").map((v) => (
+              <span key={v.trim()} className="bg-purple-50 text-purple-700 text-xs px-2 py-0.5 rounded-full font-medium">
+                {v.trim()}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-700">{value}</p>
+        )}
+      </div>
+    ) : null
+  ))
+)}
                   {r.programmingStack && (
                     <div>
                       <p className="text-xs text-slate-400 mb-1">Programming Stack</p>

@@ -17,7 +17,7 @@ A dynamic survey form application built with React and Vite. It allows responden
 1. Clone the repository:
 
    ```bash
-   git clone git@github.com:Kipkoech78/Sky-World_survey-web.git
+   git clone https://github.com/Kipkoech78/Sky-World_survey-web.git
    cd sky-world-frontend
    ```
 

@@ -105,26 +105,46 @@ function parseQuestions(xml) {
     };
   });
 }
-
 function parseResponses(xml) {
   const doc = parseXML(xml);
   const root = doc.querySelector("question_responses");
+
+  // Known fixed fields to skip when collecting dynamic answers
+  const FIXED_FIELDS = new Set([
+    "response_id", "date_responded", "full_name",
+    "email", "email_address", "gender", "description",
+    "programming_stack", "certificates"
+  ]);
+
   const responses = Array.from(doc.querySelectorAll("question_response")).map((r) => {
     const certs = Array.from(r.querySelectorAll("certificate")).map((c) => ({
       id: attr(c, "id"),
       name: c.textContent.trim(),
     }));
+
+    // Collect any extra question fields dynamically
+    const answers = {};
+    Array.from(r.children).forEach((child) => {
+      const tag = child.tagName.toLowerCase();
+      if (!FIXED_FIELDS.has(tag)) {
+        answers[child.tagName] = child.textContent.trim();
+      }
+    });
+
     return {
       responseId: xmlToText(r.querySelector("response_id")),
       fullName: xmlToText(r.querySelector("full_name")),
-      emailAddress: xmlToText(r.querySelector("email_address")),
+      // Support both <email> and <email_address>
+      emailAddress: xmlToText(r.querySelector("email_address") ?? r.querySelector("email")),
       gender: xmlToText(r.querySelector("gender")),
       description: xmlToText(r.querySelector("description")),
       programmingStack: xmlToText(r.querySelector("programming_stack")),
       dateResponded: xmlToText(r.querySelector("date_responded")),
       certificates: certs,
+      answers, // e.g. { Favourite_food: "UGALI,OMENA,MEAT" }
     };
   });
+
   return {
     currentPage: root ? parseInt(attr(root, "current_page")) : 1,
     lastPage: root ? parseInt(attr(root, "last_page")) : 1,
@@ -133,6 +153,34 @@ function parseResponses(xml) {
     responses,
   };
 }
+
+// function parseResponses(xml) {
+//   const doc = parseXML(xml);
+//   const root = doc.querySelector("question_responses");
+//   const responses = Array.from(doc.querySelectorAll("question_response")).map((r) => {
+//     const certs = Array.from(r.querySelectorAll("certificate")).map((c) => ({
+//       id: attr(c, "id"),
+//       name: c.textContent.trim(),
+//     }));
+//     return {
+//       responseId: xmlToText(r.querySelector("response_id")),
+//       fullName: xmlToText(r.querySelector("full_name")),
+//       emailAddress: xmlToText(r.querySelector("email_address")),
+//       gender: xmlToText(r.querySelector("gender")),
+//       description: xmlToText(r.querySelector("description")),
+//       programmingStack: xmlToText(r.querySelector("programming_stack")),
+//       dateResponded: xmlToText(r.querySelector("date_responded")),
+//       certificates: certs,
+//     };
+//   });
+//   return {
+//     currentPage: root ? parseInt(attr(root, "current_page")) : 1,
+//     lastPage: root ? parseInt(attr(root, "last_page")) : 1,
+//     pageSize: root ? parseInt(attr(root, "page_size")) : 10,
+//     totalCount: root ? parseInt(attr(root, "total_count")) : 0,
+//     responses,
+//   };
+// }
 
 // ── XML builders ──────────────────────────────────────────────────────────────
 
